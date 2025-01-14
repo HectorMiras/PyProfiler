@@ -4,11 +4,20 @@ import numpy as np
 
 class Profile:
 
-    def __init__(self, profile_mat):
-        self.original_positions = profile_mat[:,0]
-        self.original_values = profile_mat[:,1]
-        self.position = profile_mat[:,0]
-        self.profilevalues = profile_mat[:,1]
+    def __init__(self, data=None, nbin=None, binsize=None, origin=None, values=None):
+        if data is not None:
+            self.original_positions = data[:, 0]
+            self.original_values = data[:, 1]
+        elif nbin is not None and binsize is not None and origin is not None and values is not None:
+            positions = [origin + i * binsize for i in range(nbin)]
+            profile_mat = np.array(list(zip(positions, values)))
+            self.original_positions = profile_mat[:, 0]
+            self.original_values = profile_mat[:, 1]
+        else:
+            raise ValueError("Insufficient parameters for initialization")
+
+        self.position = self.original_positions.copy()
+        self.profilevalues = self.original_values.copy()
         self.xscale = 1.0
         self.yscale = 1.0
         self.xoffset = 0.0
@@ -23,7 +32,7 @@ class Profile:
         self.profilevalues = (self.original_values + self.yoffset)*self.yscale 
         return self.profilevalues
     
-    def get_valfromposition(self,x): 
+    def get_valfromposition(self,x):
         if(self.position[1]-self.position[0])>0:
             cs = CubicSpline(self.get_positions(), self.get_profilevalues())
         else:

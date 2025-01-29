@@ -1,5 +1,6 @@
 import numpy as np
 import profileclass
+from dosematrix import DoseMatrix
 import matplotlib.pyplot as plt
 import PinnaclePlanarDose
 import math
@@ -121,6 +122,22 @@ def test_planardose():
     plt.legend(('Film', 'TPS'), loc='upper right')
     plt.show()
 
-test_pdds()
-test_perfiles()
-test_planardose()
+
+def test_dosematrix():
+    path = os.path.join(os.getcwd(), "files")
+    dmat = DoseMatrix(file_path=os.path.join(path,"20x20_6MV_SSD90.bindose"))
+
+    perfil_pdd = dmat.get_dose_profile(idim=2,off1=0,off2=0, mode='D')
+    perfil_pdd_unc = dmat.get_dose_profile(idim=2, off1=0, off2=0, mode='U')
+
+    # representa graficamente los dos pdds
+    plt.rcParams["figure.figsize"] = (12, 8)
+    plt.errorbar(perfil_pdd.get_positions(), perfil_pdd.get_profilevalues(), yerr=perfil_pdd_unc.get_profilevalues())
+    plt.title('PDD 20x20, SSD = 90cm')
+    plt.xlabel('mm')
+    plt.show()
+
+#test_pdds()
+#test_perfiles()
+#test_planardose()
+test_dosematrix()

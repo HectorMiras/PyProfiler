@@ -6,7 +6,7 @@ class DoseMatrix:
     def __init__(self, numHist=1, weight=1,
                  nx=1, ny=1, nz=1,
                  XPosition=0.0, YPosition=0.0, ZPosition=0.0,
-                 xPixelSize=1.0, yPixelSize=1.0, zPixelSize=1.0):
+                 xPixelSize=1.0, yPixelSize=1.0, zPixelSize=1.0,file_path=None):
         self.numHist = numHist  # double, 8 bytes
         self.weight = weight  # float, 4 bytes
         self.nx = nx  # int, 4 bytes
@@ -21,8 +21,10 @@ class DoseMatrix:
         self.dosArr = [[[0.0 for _ in range(nz)] for _ in range(ny)] for _ in range(nx)]  # dose matrix
         self.uncArr = [[[0.0 for _ in range(nz)] for _ in range(ny)] for _ in range(nx)]  # uncertainty matrix
         self.isUnc = False
+        if file_path:
+            self.load_from_bindose_file(file_path)
 
-    def load_from_bindose_file(self, file_path, ):
+    def load_from_bindose_file(self, file_path):
         with open(file_path, 'rb') as file:
             # Reading header information
             self.numHist = struct.unpack('d', file.read(8))[0]
@@ -105,7 +107,7 @@ class DoseMatrix:
 
         return c
 
-    def get_dose_profile(self, idim, off1, off2):
+    def get_dose_profile(self, idim, off1, off2, mode='D'):
         if idim == 0:
             nbin = self.nx
             binsize = self.xPixelSize
@@ -125,11 +127,11 @@ class DoseMatrix:
         for i in range(nbin):
             x = origen + i * binsize
             if idim == 0:
-                valores[i] = self.value_from_position(x, off1, off2)
+                valores[i] = self.value_from_position(x, off1, off2, mode=mode)
             elif idim == 1:
-                valores[i] = self.value_from_position(off1, x, off2)
+                valores[i] = self.value_from_position(off1, x, off2, mode=mode)
             elif idim == 2:
-                valores[i] = self.value_from_position(off1, off2, x)
+                valores[i] = self.value_from_position(off1, off2, x, mode=mode)
 
         # Assuming DoseProfile is a class you have defined elsewhere
         dp = Profile(nbin=nbin, binsize=binsize, origin=origen, values=valores)
